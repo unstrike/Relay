@@ -22,8 +22,8 @@ jobs:
       - uses: actions/checkout@v4
       - run: |
           xcodebuild test \
-            -project "Leader Key.xcodeproj" \
-            -scheme "Leader Key" \
+            -project "Relay.xcodeproj" \
+            -scheme "Relay" \
             -destination "platform=macOS" \
             -testPlan "TestPlan" \
             -skipPackagePluginValidation \

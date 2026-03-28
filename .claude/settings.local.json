@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /Users/kloccis1/Developer/Relay -name *.swift -o -name *.xcodeproj -o -name *.xctestplan -o -name *.plist -o -name *.json -o -name *.md -o -name *.yml)",
+      "mcp__todoglow__update_thread",
+      "Bash(xcodebuild -scheme \"Relay\" -configuration Debug build)",
+      "Bash(xcodebuild -scheme \"Relay\" -configuration Debug test)",
+      "Bash(xcodebuild -scheme \"Relay\" -configuration Debug test -allowProvisioningUpdates)",
+      "Bash(xcodebuild -scheme \"Relay\" -configuration Debug test CODE_SIGN_IDENTITY=\"\" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO)",
+      "Bash(xcodebuild -scheme \"Relay\" -testPlan \"TestPlan\" test)",
+      "Bash(xcodebuild -scheme \"Relay\" -configuration Debug build CODE_SIGN_IDENTITY=\"\" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO)",
+      "Bash(swift format:*)"
+    ]
+  }
+}
