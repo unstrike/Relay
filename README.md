@@ -51,6 +51,12 @@ open "Relay.xcodeproj"
 - <kbd>⌘⌥⌃⇧ + L</kbd> (hyper key)
 - <kbd>Caps Lock</kbd> → <kbd>F12</kbd> via Karabiner (tap to trigger, hold for hyper)
 
+## Group shortcuts
+
+Top-level groups can be assigned a global shortcut that fires them directly — skipping the trigger key entirely. Click the shortcut field on any top-level group row in the Config editor and record a key combo.
+
+Useful for your most-reached groups when a single chord beats a two-step sequence.
+
 ## URL Scheme
 
 Relay supports URL scheme automation for integration with Alfred, Raycast, shell scripts, and more.
