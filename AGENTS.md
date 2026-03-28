@@ -2,19 +2,18 @@
 
 This file provides guidance to coding agents when working with code in this repository.
 
-# Leader Key Development Guide
+# Relay Development Guide
 
 ## Build & Test Commands
 
-- Build and run: `xcodebuild -scheme "Leader Key" -configuration Debug build`
-- Run all tests: `xcodebuild -scheme "Leader Key" -testPlan "TestPlan" test`
-- Run single test: `xcodebuild -scheme "Leader Key" -testPlan "TestPlan" -only-testing:Leader KeyTests/UserConfigTests/testInitializesWithDefaults test`
+- Build and run: `xcodebuild -scheme "Relay" -configuration Debug build`
+- Run all tests: `xcodebuild -scheme "Relay" -testPlan "TestPlan" test`
+- Run single test: `xcodebuild -scheme "Relay" -testPlan "TestPlan" -only-testing:RelayTests/UserConfigTests/testInitializesWithDefaults test`
 - Bump version: `bin/bump`
-- Create release: `bin/release`
 
 ## Architecture Overview
 
-Leader Key is a macOS application that provides customizable keyboard shortcuts. The core architecture consists of:
+Relay is a macOS application that provides customizable keyboard chord shortcuts. The core architecture consists of:
 
 **Key Components:**
 
@@ -32,7 +31,7 @@ Leader Key is a macOS application that provides customizable keyboard shortcuts.
 
 **Configuration Flow:**
 
-- Config stored at `~/Library/Application Support/Leader Key/config.json`
+- Config stored at `~/Library/Application Support/Relay/config.json`
 - `FileMonitor` watches for changes and triggers reload
 - `ConfigValidator` ensures no key conflicts
 - Actions support: applications, URLs, commands, folders

@@ -1,0 +1,53 @@
+#!/bin/bash
+# Generate HTML release notes from git log since last tag.
+# Usage: bin/changelog [--copy]  (--copy sends output to clipboard)
+set -e
+
+LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+
+if [[ -z "$LAST_TAG" ]]; then
+  RANGE="HEAD"
+  echo "Warning: no tags found, using all commits" >&2
+else
+  RANGE="$LAST_TAG..HEAD"
+  echo "Commits since $LAST_TAG:" >&2
+fi
+
+COMMITS=$(git log "$RANGE" --pretty=format:"%s" --no-merges)
+
+if [[ -z "$COMMITS" ]]; then
+  echo "No commits since $LAST_TAG" >&2
+  exit 0
+fi
+
+ADDED=""
+FIXED=""
+CHANGED=""
+OTHER=""
+
+while IFS= read -r line; do
+  # Strip PR numbers: "Fix thing (#123)" -> "Fix thing"
+  clean="${line% (#*)}"
+  if [[ "$clean" =~ ^[Aa]dd ]]; then
+    ADDED+="    <li><strong>Added:</strong> ${clean}</li>\n"
+  elif [[ "$clean" =~ ^[Ff]ix ]]; then
+    FIXED+="    <li><strong>Fixed:</strong> ${clean}</li>\n"
+  elif [[ "$clean" =~ ^([Uu]pdate|[Rr]efactor|[Ii]mprove|[Cc]hange|[Rr]evise) ]]; then
+    CHANGED+="    <li><strong>Changed:</strong> ${clean}</li>\n"
+  else
+    OTHER+="    <li>${clean}</li>\n"
+  fi
+done <<< "$COMMITS"
+
+OUTPUT="<description><![CDATA[
+  <h2>Release notes</h2>
+  <ul>
+$(printf "%b" "$ADDED$FIXED$CHANGED$OTHER")  </ul>
+]]></description>"
+
+if [[ "$1" == "--copy" ]]; then
+  echo "$OUTPUT" | pbcopy
+  echo "Release notes copied to clipboard." >&2
+else
+  echo "$OUTPUT"
+fi

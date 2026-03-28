@@ -1,0 +1,144 @@
+#!/usr/bin/env python3
+# Scaffold a new Relay theme.
+# Usage: bin/new-theme ThemeName "Display Name"
+# Example: bin/new-theme Compact "Compact"
+
+import sys
+import os
+import re
+
+def to_camel_case(name):
+    return name[0].lower() + name[1:]
+
+def usage():
+    print("Usage: bin/new-theme ThemeName \"Display Name\"")
+    print("Example: bin/new-theme Compact \"Compact\"")
+    sys.exit(1)
+
+if len(sys.argv) < 3:
+    usage()
+
+theme_class = sys.argv[1]   # e.g. "Compact"
+display_name = sys.argv[2]  # e.g. "Compact"
+theme_case = to_camel_case(theme_class)  # e.g. "compact"
+
+repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+theme_file = os.path.join(repo_root, "Relay", "Themes", f"{theme_class}.swift")
+theme_registry = os.path.join(repo_root, "Relay", "Theme.swift")
+
+# --- Guard ---
+if os.path.exists(theme_file):
+    print(f"Error: {theme_file} already exists.")
+    sys.exit(1)
+
+# --- Scaffold Swift file ---
+swift = f"""import SwiftUI
+
+enum {theme_class} {{
+  static let size: CGFloat = 200
+
+  class Window: MainWindow {{
+    required init(controller: Controller) {{
+      super.init(
+        controller: controller,
+        contentRect: NSRect(x: 0, y: 0, width: {theme_class}.size, height: {theme_class}.size))
+
+      let view = MainView().environmentObject(self.controller.userState)
+      contentView = NSHostingView(rootView: view)
+    }}
+
+    override func show(on screen: NSScreen, after: (() -> Void)? = nil) {{
+      let center = screen.center()
+      let newOriginX = center.x - {theme_class}.size / 2
+      let newOriginY = center.y + {theme_class}.size / 8
+      self.setFrameOrigin(NSPoint(x: newOriginX, y: newOriginY))
+      makeKeyAndOrderFront(nil)
+      fadeInAndUp {{ after?() }}
+    }}
+
+    override func hide(after: (() -> Void)? = nil) {{
+      fadeOutAndDown {{ super.hide(after: after) }}
+    }}
+
+    override func notFound() {{
+      shake()
+    }}
+
+    override func cheatsheetOrigin(cheatsheetSize: NSSize) -> NSPoint {{
+      return NSPoint(
+        x: frame.maxX + 20,
+        y: frame.midY - cheatsheetSize.height / 2)
+    }}
+  }}
+
+  struct MainView: View {{
+    @EnvironmentObject var userState: UserState
+
+    var body: some View {{
+      ZStack {{
+        let keyText = userState.currentGroup?.key ?? userState.display ?? "●"
+        let glyphText = KeyMaps.glyph(for: keyText) ?? keyText
+        Text(glyphText)
+          .fontDesign(.rounded)
+          .fontWeight(.semibold)
+          .font(.system(size: 28, weight: .semibold, design: .rounded))
+      }}
+      .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+      .background(
+        VisualEffectView(material: .hudWindow, blendingMode: .behindWindow)
+      )
+      .clipShape(RoundedRectangle(cornerRadius: 25.0, style: .continuous))
+    }}
+  }}
+}}
+
+struct {theme_class}_MainView_Previews: PreviewProvider {{
+  static var previews: some View {{
+    {theme_class}.MainView().environmentObject(UserState(userConfig: UserConfig()))
+      .frame(width: {theme_class}.size, height: {theme_class}.size, alignment: .center)
+  }}
+}}
+"""
+
+with open(theme_file, "w") as f:
+    f.write(swift)
+print(f"Created: Relay/Themes/{theme_class}.swift")
+
+# --- Patch Theme.swift ---
+with open(theme_registry, "r") as f:
+    src = f.read()
+
+# 1. Add enum case after last existing case
+src = re.sub(
+    r'(  case cheater\n)',
+    f'\\1  case {theme_case}\n',
+    src
+)
+
+# 2. Add to `all` array
+src = re.sub(
+    r'(return \[.*?)(\.cheater)(\])',
+    f'\\1\\2, .{theme_case}\\3',
+    src
+)
+
+# 3. Add classFor case before closing brace of that switch
+src = re.sub(
+    r'(    case \.cheater:\n      return Cheater\.Window\.self\n)',
+    f'\\1    case .{theme_case}:\n      return {theme_class}.Window.self\n',
+    src
+)
+
+# 4. Add name case before closing brace of that switch
+src = re.sub(
+    r'(    case \.cheater: return "Cheater"\n)',
+    f'\\1    case .{theme_case}: return "{display_name}"\n',
+    src
+)
+
+with open(theme_registry, "w") as f:
+    f.write(src)
+print(f"Patched: Relay/Theme.swift")
+print(f"\nNext steps:")
+print(f"  1. Add 'Relay/Themes/{theme_class}.swift' to the Xcode project target")
+print(f"  2. Customise the Window and MainView in {theme_class}.swift")

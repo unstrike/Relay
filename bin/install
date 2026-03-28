@@ -1,0 +1,38 @@
+#!/bin/bash
+# Build and install Relay to /Applications.
+# Usage: bin/install
+set -e
+
+APP_NAME="Relay"
+SCHEME="Relay"
+CONFIG="Debug"
+
+echo "Building..."
+xcodebuild -scheme "$SCHEME" -configuration "$CONFIG" build -quiet
+
+BUILT_DIR=$(
+  xcodebuild -scheme "$SCHEME" -configuration "$CONFIG" \
+    -showBuildSettings 2>/dev/null \
+    | grep "^\s*BUILT_PRODUCTS_DIR" \
+    | awk '{ print $3 }'
+)
+APP_PATH="$BUILT_DIR/$APP_NAME.app"
+
+if [[ ! -d "$APP_PATH" ]]; then
+  echo "Error: built app not found at $APP_PATH"
+  exit 1
+fi
+
+if pgrep -x "Relay" > /dev/null; then
+  echo "Quitting running instance..."
+  osascript -e 'quit app "Relay"' 2>/dev/null || true
+  sleep 1
+fi
+
+echo "Installing to /Applications..."
+cp -Rf "$APP_PATH" "/Applications/$APP_NAME.app"
+
+echo "Launching..."
+open "/Applications/$APP_NAME.app"
+
+echo "Done."
