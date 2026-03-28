@@ -20,10 +20,12 @@ agvtool what-version
 ### 2. Bump version
 
 ```bash
-bin/bump
+bin/bump X.Y.Z
 ```
 
-Sets the build number (based on git commit count) across all `Info.plist` files. Commit all work before bumping.
+Pass the new marketing version (e.g. `2.1.0`). Sets both the marketing version and build number (from git commit count) across all targets. Commit all work before bumping.
+
+To bump build number only (no version change): `bin/bump`
 
 ### 3. Generate changelog
 
@@ -50,5 +52,6 @@ git log --oneline -3
 
 ## Notes
 
-- `bin/bump` uses git commit count as build number — commit all work before bumping
+- `bin/bump X.Y.Z` sets both marketing version and build number — commit all work first
+- Marketing version maps to "About" panel display; build number is git commit count
 - Tags trigger CI; ensure tests pass before tagging

@@ -1,11 +1,19 @@
 #!/bin/bash
 
+# Usage: bin/bump [marketing-version]
+# Updates build number (from git commit count) and optionally the marketing version.
+
 BUILD=$(git rev-list "$(git rev-parse --abbrev-ref HEAD)" | wc -l | awk '{ print $1 }')
 BUILD="$((BUILD + 0))"
 
-echo "${BUILD}"
+echo "Build: ${BUILD}"
 
 agvtool new-version -all ${BUILD}
+
+if [ -n "$1" ]; then
+  echo "Marketing version: $1"
+  agvtool new-marketing-version $1
+fi
 
 echo "Resolving package dependencies"
 xcodebuild -resolvePackageDependencies
